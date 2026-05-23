@@ -1,328 +1,177 @@
-import React, { useState } from 'react';
-import { Server, Database, HardDrive, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Database, HardDrive, Server } from 'lucide-react';
+
+const FILTERS = [
+  { id: 'all', label: 'All providers' },
+  { id: 'aws', label: 'AWS' },
+  { id: 'gcp', label: 'GCP' },
+  { id: 'azure', label: 'Azure' },
+];
+
+const ZONES = {
+  aws: { label: 'AWS · us-east-1', cls: 'zone--aws' },
+  gcp: { label: 'GCP · europe-west3', cls: 'zone--gcp' },
+  azure: { label: 'Azure · eastus', cls: 'zone--azure' },
+};
+
+function ServiceIcon({ service }) {
+  const s = service.toLowerCase();
+  if (s === 'database') return <Database size={14} />;
+  if (s === 'storage') return <HardDrive size={14} />;
+  return <Server size={14} />;
+}
 
 export default function ResourceMap({ resources, recommendations, onExecuteRecommendation }) {
-  const [hoveredResourceId, setHoveredResourceId] = useState(null);
-  const [selectedProvider, setSelectedProvider] = useState('all');
+  const [hoveredId, setHoveredId] = useState(null);
+  const [provider, setProvider] = useState('all');
 
-  const providers = [
-    { id: 'all', label: 'All Cloud Providers' },
-    { id: 'aws', label: 'Amazon Web Services' },
-    { id: 'gcp', label: 'Google Cloud Platform' },
-    { id: 'azure', label: 'Microsoft Azure' }
-  ];
+  const filtered = resources.filter((r) => provider === 'all' || r.provider === provider);
 
-  const getServiceIcon = (service) => {
-    switch (service.toLowerCase()) {
-      case 'compute': return <Server size={14} />;
-      case 'database': return <Database size={14} />;
-      case 'storage': return <HardDrive size={14} />;
-      default: return <Server size={14} />;
-    }
-  };
-
-  const filteredResources = resources.filter(res => {
-    if (selectedProvider === 'all') return true;
-    return res.provider === selectedProvider;
-  });
-
-  // Check if a resource has an active waste alert
-  const getResourceAlert = (resourceId) => {
-    return recommendations.find(rec => rec.resourceId === resourceId && rec.status === 'pending');
-  };
-
-  const getProviderColor = (provider) => {
-    switch (provider) {
-      case 'aws': return '#FF9900';
-      case 'gcp': return '#4285F4';
-      case 'azure': return '#0089D6';
-      default: return 'var(--accent-purple)';
-    }
-  };
+  const getAlert = (id) =>
+    recommendations.find((rec) => rec.resourceId === id && rec.status === 'pending');
 
   return (
-    <div className="glass-panel" style={{ padding: '24px', position: 'relative' }}>
-      {/* Map Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+    <div className="card">
+      <div className="card__header">
         <div>
-          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Cloud Infrastructure Explorer</h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Visual cost waste map mapped across multi-cloud regions</p>
+          <h3 className="card__title">Infrastructure map</h3>
+          <p className="card__subtitle">Resources grouped by cloud region with live diagnostics</p>
         </div>
-        
-        {/* Provider Filters */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {providers.map(prov => (
+        <div className="map-filters">
+          {FILTERS.map((f) => (
             <button
-              key={prov.id}
-              onClick={() => setSelectedProvider(prov.id)}
-              style={{
-                background: selectedProvider === prov.id ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid',
-                borderColor: selectedProvider === prov.id ? 'var(--accent-cyan)' : 'var(--border-color)',
-                color: selectedProvider === prov.id ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                fontSize: '12px',
-                fontWeight: '500',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-sans)',
-                transition: 'all 0.2s'
-              }}
+              key={f.id}
+              type="button"
+              className={`filter-chip${provider === f.id ? ' filter-chip--active' : ''}`}
+              onClick={() => setProvider(f.id)}
             >
-              {prov.label}
+              {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Grid of Cloud Provider Zones */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '24px' 
-      }}>
-        {['aws', 'gcp', 'azure'].map(provKey => {
-          if (selectedProvider !== 'all' && selectedProvider !== provKey) return null;
-          
-          const providerResources = filteredResources.filter(r => r.provider === provKey);
-          if (providerResources.length === 0) return null;
+      <div className="card__body">
+        <div className="map-grid">
+          {['aws', 'gcp', 'azure'].map((key) => {
+            if (provider !== 'all' && provider !== key) return null;
+            const nodes = filtered.filter((r) => r.provider === key);
+            if (!nodes.length) return null;
+            const zone = ZONES[key];
 
-          return (
-            <div 
-              key={provKey} 
-              className="glass-panel" 
-              style={{
-                padding: '20px',
-                background: 'rgba(255, 255, 255, 0.01)',
-                border: `1px solid rgba(255,255,255, 0.04)`,
-                borderTop: `3px solid ${getProviderColor(provKey)}`,
-                position: 'relative'
-              }}
-            >
-              {/* Provider Zone Banner */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <span style={{ 
-                  fontSize: '13px', 
-                  fontWeight: '800', 
-                  color: getProviderColor(provKey), 
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px'
-                }}>
-                  {provKey === 'aws' ? 'AWS (us-east-1)' : provKey === 'gcp' ? 'GCP (europe-w3)' : 'AZURE (eastus)'}
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  {providerResources.length} Nodes monitored
-                </span>
-              </div>
+            return (
+              <div key={key} className={`card zone ${zone.cls}`}>
+                <div className="zone__head">
+                  <span className="zone__name">{zone.label}</span>
+                  <span className="zone__count">{nodes.length} nodes</span>
+                </div>
 
-              {/* Resource nodes list in provider zone */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {providerResources.map(res => {
-                  const alert = getResourceAlert(res.id);
-                  const isHovered = hoveredResourceId === res.id;
-                  
+                {nodes.map((res) => {
+                  const alert = getAlert(res.id);
+                  const hover = hoveredId === res.id;
+
                   return (
                     <div
                       key={res.id}
-                      onMouseEnter={() => setHoveredResourceId(res.id)}
-                      onMouseLeave={() => setHoveredResourceId(null)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '12px',
-                        borderRadius: '10px',
-                        background: alert ? 'rgba(239, 68, 68, 0.03)' : 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid',
-                        borderColor: alert ? 'rgba(239, 68, 68, 0.2)' : 'var(--border-color)',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        transition: 'all 0.2s',
-                        boxShadow: alert ? '0 0 10px rgba(239, 68, 68, 0.02)' : 'none',
-                        animation: alert && alert.impact === 'high' ? 'border-glow-flow 3s infinite' : 'none'
-                      }}
+                      className={`resource-node${alert ? ' resource-node--alert' : ''}`}
+                      onMouseEnter={() => setHoveredId(res.id)}
+                      onMouseLeave={() => setHoveredId(null)}
                     >
-                      {/* Node Left Meta */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '6px',
-                          background: alert ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255,255,255, 0.04)',
-                          color: alert ? 'var(--color-error)' : 'var(--text-secondary)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          {getServiceIcon(res.service)}
+                      <div className="resource-node__left">
+                        <div className="resource-node__icon">
+                          <ServiceIcon service={res.service} />
                         </div>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{res.name}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{res.id}</div>
+                        <div style={{ minWidth: 0 }}>
+                          <div className="resource-node__name">{res.name}</div>
+                          <div className="resource-node__id">{res.id}</div>
                         </div>
                       </div>
-
-                      {/* Node Right Status */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>${res.costPerMonth.toFixed(2)}</span>
-                          <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>/month</div>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="resource-node__cost">
+                          ${res.costPerMonth.toFixed(2)}
+                          <span>/mo</span>
                         </div>
-
-                        {/* Visual alerts indicator */}
-                        {alert ? (
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: 'var(--color-error)',
-                            boxShadow: '0 0 10px var(--color-error)',
-                            animation: 'pulse-error 1.5s infinite'
-                          }} />
-                        ) : (
-                          <div style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            backgroundColor: 'var(--color-success)'
-                          }} />
-                        )}
+                        <span className={`resource-node__dot${alert ? ' resource-node__dot--alert' : ' resource-node__dot--ok'}`} />
                       </div>
 
-                      {/* POPUP CARD HOVER INSPECTOR */}
-                      {isHovered && (
-                        <div className="glass-panel" style={{
-                          position: 'absolute',
-                          left: '5%',
-                          bottom: '105%',
-                          width: '290px',
-                          padding: '16px',
-                          zIndex: 10,
-                          backgroundColor: 'rgba(9, 12, 23, 0.98)',
-                          border: '1px solid var(--border-active)',
-                          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(139, 92, 246, 0.15)',
-                          borderRadius: '12px',
-                          pointerEvents: 'auto'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent-cyan)', textTransform: 'uppercase' }}>
-                              RESOURCE DIAGNOSTIC
-                            </span>
-                            <span style={{
-                              fontSize: '10px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              backgroundColor: res.status === 'idle' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                              color: res.status === 'idle' ? 'var(--color-warning)' : 'var(--color-success)',
-                              fontWeight: '600',
-                              textTransform: 'uppercase'
-                            }}>
+                      {hover && (
+                        <div className="resource-popover" onClick={(e) => e.stopPropagation()}>
+                          <div className="resource-popover__label">
+                            Diagnostic
+                            <span className={`status-pill status-pill--${res.status === 'idle' ? 'idle' : 'running'}`}>
                               {res.status}
                             </span>
                           </div>
-
-                          <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '2px' }}>{res.name}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '10px' }}>
-                            {res.id} ({res.type})
+                          <div style={{ fontWeight: 700, fontSize: 14 }}>{res.name}</div>
+                          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', marginBottom: 10 }}>
+                            {res.id} · {res.type}
                           </div>
 
-                          {/* Telemetry Utilization stats */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px' }}>
-                            {res.service === 'Compute' || res.service === 'Database' ? (
-                              <>
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '2px' }}>
-                                    <span>Average CPU Utilization</span>
-                                    <span>{res.utilization.cpu}%</span>
-                                  </div>
-                                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                                    <div style={{
+                          {(res.service === 'Compute' || res.service === 'Database') && (
+                            <>
+                              <div className="util-bar">
+                                <div className="util-bar__head">
+                                  <span>CPU</span>
+                                  <span>{res.utilization.cpu}%</span>
+                                </div>
+                                <div className="util-bar__track">
+                                  <div
+                                    className="util-bar__fill"
+                                    style={{
                                       width: `${res.utilization.cpu}%`,
-                                      height: '100%',
-                                      backgroundColor: res.utilization.cpu < 5 ? 'var(--color-error)' : 'var(--accent-purple)'
-                                    }} />
-                                  </div>
+                                      background: res.utilization.cpu < 5 ? 'var(--danger)' : 'var(--accent)',
+                                    }}
+                                  />
                                 </div>
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '2px' }}>
-                                    <span>RAM Utilization</span>
-                                    <span>{res.utilization.memory}%</span>
-                                  </div>
-                                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                                    <div style={{
+                              </div>
+                              <div className="util-bar">
+                                <div className="util-bar__head">
+                                  <span>Memory</span>
+                                  <span>{res.utilization.memory}%</span>
+                                </div>
+                                <div className="util-bar__track">
+                                  <div
+                                    className="util-bar__fill"
+                                    style={{
                                       width: `${res.utilization.memory}%`,
-                                      height: '100%',
-                                      backgroundColor: res.utilization.memory < 15 ? 'var(--color-warning)' : 'var(--accent-cyan)'
-                                    }} />
-                                  </div>
+                                      background: res.utilization.memory < 15 ? 'var(--warning)' : 'var(--cyan)',
+                                    }}
+                                  />
                                 </div>
-                              </>
-                            ) : null}
+                              </div>
+                            </>
+                          )}
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-secondary)' }}>
-                              <span>Network I/O Rate:</span>
-                              <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{res.utilization.network}</span>
-                            </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8 }}>
+                            Network: <span style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{res.utilization.network}</span>
                           </div>
 
-                          {/* Action Recommendation overlay */}
                           {alert ? (
-                            <div style={{
-                              background: 'rgba(239, 68, 68, 0.05)',
-                              border: '1px solid rgba(239, 68, 68, 0.15)',
-                              borderRadius: '8px',
-                              padding: '8px 10px',
-                              fontSize: '11px',
-                              color: 'var(--text-primary)'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-error)', fontWeight: 'bold', marginBottom: '4px' }}>
+                            <div className="alert-box">
+                              <div className="alert-box__title">
                                 <AlertTriangle size={12} />
-                                <span>AI Agent Cost Waste Flagged</span>
+                                Waste detected
                               </div>
-                              <div style={{ color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '10.5px' }}>
+                              <p style={{ color: 'var(--text-secondary)', marginBottom: 10, lineHeight: 1.4 }}>
                                 {alert.description}
-                              </div>
-                              
+                              </p>
                               <button
+                                type="button"
+                                className="btn btn--danger btn--sm"
+                                style={{ width: '100%', justifyContent: 'center' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onExecuteRecommendation(alert);
                                 }}
-                                style={{
-                                  width: '100%',
-                                  background: 'linear-gradient(135deg, var(--color-error) 0%, #b91c1c 100%)',
-                                  color: 'white',
-                                  border: 'none',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '4px',
-                                  boxShadow: '0 0 10px var(--color-error-glow)',
-                                }}
                               >
-                                <span>Execute Cleanup</span>
-                                <ArrowRight size={10} />
+                                Execute cleanup
+                                <ArrowRight size={12} />
                               </button>
                             </div>
                           ) : (
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontSize: '11px',
-                              color: 'var(--color-success)',
-                              background: 'rgba(16, 185, 129, 0.05)',
-                              border: '1px solid rgba(16, 185, 129, 0.15)',
-                              borderRadius: '8px',
-                              padding: '6px 10px'
-                            }}>
+                            <div className="ok-box">
                               <CheckCircle2 size={12} />
-                              <span>Efficiently Configured Node</span>
+                              Optimally configured
                             </div>
                           )}
                         </div>
@@ -331,9 +180,9 @@ export default function ResourceMap({ resources, recommendations, onExecuteRecom
                   );
                 })}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

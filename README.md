@@ -1,77 +1,128 @@
-# Gradient V3: AI Cloud Cost Optimizer
+# Gradient V3 — AI Cloud Cost Optimizer
 
-Gradient is a premium, high-fidelity multi-cloud infrastructure cost optimization agent. Designed for modern DevOps and site reliability engineers, it continuous scans AWS, GCP, and Azure telemetry feeds, identifies overprovisioned nodes, compiles real-time waste analytics, and offers autonomous AI autopilot remediation scripts.
-
----
-
-##  Key Features
-
-*   **Multi-Cloud Spend Trends**: Elegant SVG-based grouped bar chart displaying month-over-month historical runrates for AWS, GCP, and Azure.
-*   **Future AI Cost Simulator**: Interactive predictive line graphs modeling future compute spend relative to growth variables, spot instance rates, and autopilot policies.
-*   **Autopilot Remediation Core**: Active background simulation loops capable of executing targeted CLI commands gracefully (e.g. EC2 resizing, EBS deletions, storage archiving).
-*   **Infrastructure Topology Map**: Dynamic visual topology mapping of active regions and zone clusters, complete with hover diagnostic overlays and micro-utilization gauges.
-*   **Interactive Agent Chat**: Real-time diagnostic terminal advice and inline prompt action approvals to downscale idle resources immediately.
-*   **Scan Policies & Credentials**: Global credential handshake bindings and continuous scanning intervals (1m, 5m, hourly, daily).
+Gradient is a multi-cloud infrastructure cost optimization dashboard for DevOps and SRE teams. It simulates continuous scanning across AWS, GCP, and Azure, surfaces waste and savings opportunities, forecasts spend, and runs mock autopilot remediations with a live agent terminal and chat.
 
 ---
 
-##  Technology Stack
+## Key features
 
-- **Framework**: [React 19](https://react.dev/) + [Vite 8](https://vite.dev/)
-- **Styling**: Vanilla HSL CSS variables, glassmorphic filters, and high-performance keyframe animations (`float`, `pulse-glow`, `border-glow-flow`)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Typography**: Google Fonts Outfit & JetBrains Mono
+- **Dashboard** — KPI cards for runrate, detected waste, available savings, and remediation progress; spend trend chart; top optimizations; health and waste breakdown widgets.
+- **Multi-cloud spend trends** — SVG grouped bar chart for AWS, Azure, and GCP month-over-month runrate.
+- **Cost forecaster** — Interactive baseline vs. optimized projection with growth, autopilot strictness, and spot migration sliders.
+- **Resource map** — Per-provider zones with hover diagnostics, utilization bars, and one-click remediation.
+- **Optimization queue** — Pending recommendations with CLI previews, execute/ignore actions, and resolved history.
+- **Agent terminal** — Live telemetry log stream with scan pause/clear controls.
+- **Agent chat** — Preset prompts and inline remediation cards tied to mock inventory.
+- **Autopilot** — Optional background loop that applies pending recommendations automatically.
+- **Settings** — Mock credential bindings, scan frequency, autopilot scope, and **light/dark theme**.
+- **Dark & light mode** — Full UI theming with persisted preference, system default on first visit, and no flash on load.
 
 ---
 
-##  Codebase Directory Structure
+## Technology stack
+
+| Layer | Choice |
+|--------|--------|
+| Framework | [React 19](https://react.dev/) + [Vite 8](https://vite.dev/) |
+| Styling | CSS custom properties (`data-theme`), component utility classes |
+| Icons | [Lucide React](https://lucide.dev/) |
+| Typography | [DM Sans](https://fonts.google.com/specimen/DM+Sans) + [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) |
+| Data | Local mock data (`src/data/mockCloudData.js`) — no backend required |
+
+---
+
+## Project structure
 
 ```text
 GradientV3/
 ├── src/
 │   ├── components/
-│   │   ├── AgentChat.jsx            # Live interactive advisory console
-│   │   ├── AgentTerminal.jsx        # Live shell telemetry logs terminal
-│   │   ├── CostForecaster.jsx       # Predictive simulator and variables console
-│   │   ├── MetricsOverview.jsx      # Dashboard key performance indicator counters
-│   │   ├── RecommendationsList.jsx  # Active optimizations checklist & actions
-│   │   ├── ResourceMap.jsx          # Cloud visual region topology zones map
-│   │   ├── Sidebar.jsx              # Navigation dashboard side panel
-│   │   └── SpendTrendChart.jsx      # Grouped multi-cloud SVG historical charts
+│   │   ├── AgentChat.jsx
+│   │   ├── AgentTerminal.jsx
+│   │   ├── CostForecaster.jsx
+│   │   ├── MetricsOverview.jsx
+│   │   ├── RecommendationsList.jsx
+│   │   ├── ResourceMap.jsx
+│   │   ├── SettingsPanel.jsx
+│   │   ├── Sidebar.jsx
+│   │   ├── SpendTrendChart.jsx
+│   │   └── ThemeToggle.jsx
+│   ├── context/
+│   │   ├── themeContext.js
+│   │   └── ThemeProvider.jsx
+│   ├── hooks/
+│   │   └── useTheme.js
+│   ├── lib/
+│   │   └── theme.js              # Theme storage & apply helpers
 │   ├── data/
-│   │   └── mockCloudData.js         # Multi-cloud inventory, recommendations & preset chats
-│   ├── App.jsx                      # Main viewport layout router and orchestration
-│   ├── index.css                    # Core design system and glassmorphism styling
-│   └── main.jsx                     # Vite index mount entrypoint
-├── index.html                       # HTML head entrypoint and Google Web Fonts
-├── vite.config.js                   # Vite configuration
-└── package.json                     # System dependencies & build scripts
+│   │   └── mockCloudData.js
+│   ├── App.jsx
+│   ├── index.css                 # Design tokens (dark/light) + layout
+│   └── main.jsx
+├── index.html                    # Theme bootstrap script (anti-flash)
+├── vite.config.js
+└── package.json
 ```
 
 ---
 
-##  Getting Started
+## Getting started
 
 ### Prerequisites
-Make sure you have [Node.js](https://nodejs.org/) installed on your local machine.
 
-### Installation
-1. Clone this repository to your workspace.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+- [Node.js](https://nodejs.org/) 18+
 
-### Running Locally
-To launch the hot-reloading development server:
+### Install
+
+```bash
+npm install
+```
+
+### Development
+
 ```bash
 npm run dev
 ```
-The application will be served live at: **[http://localhost:5173/](http://localhost:5173/)**
 
-### Production Build
-To compile the highly optimized bundle:
+Open [http://localhost:5173/](http://localhost:5173/)
+
+### Production build
+
 ```bash
 npm run build
+npm run preview
 ```
-Production assets will be built in the `/dist` folder, ready for direct deployment.
+
+Output is written to `dist/`.
+
+### Lint
+
+```bash
+npm run lint
+```
+
+---
+
+## Theme (appearance)
+
+- Toggle **Light** / **Dark** from the header or under **Settings → Appearance**.
+- Preference is saved in `localStorage` under the key `gradient-theme`.
+- If no saved preference exists, the app follows `prefers-color-scheme`.
+- `index.html` includes an inline script so the correct theme applies before React hydrates.
+
+---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+
+---
+
+## License
+
+This project is provided as-is for demonstration and local development.
