@@ -1,21 +1,21 @@
-# 🔮 Gradient V3: AI Cloud Cost Optimizer
+# Gradient V3: AI Cloud Cost Optimizer
 
 Gradient is a premium, high-fidelity multi-cloud infrastructure cost optimization agent. Designed for modern DevOps and site reliability engineers, it continuous scans AWS, GCP, and Azure telemetry feeds, identifies overprovisioned nodes, compiles real-time waste analytics, and offers autonomous AI autopilot remediation scripts.
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-*   **📊 Multi-Cloud Spend Trends**: Elegant SVG-based grouped bar chart displaying month-over-month historical runrates for AWS, GCP, and Azure.
-*   **📈 Future AI Cost Simulator**: Interactive predictive line graphs modeling future compute spend relative to growth variables, spot instance rates, and autopilot policies.
-*   **🤖 Autopilot Remediation Core**: Active background simulation loops capable of executing targeted CLI commands gracefully (e.g. EC2 resizing, EBS deletions, storage archiving).
-*   **🗺️ Infrastructure Topology Map**: Dynamic visual topology mapping of active regions and zone clusters, complete with hover diagnostic overlays and micro-utilization gauges.
-*   **💬 Interactive Agent Chat**: Real-time diagnostic terminal advice and inline prompt action approvals to downscale idle resources immediately.
-*   **⚙️ Scan Policies & Credentials**: Global credential handshake bindings and continuous scanning intervals (1m, 5m, hourly, daily).
+*   **Multi-Cloud Spend Trends**: Elegant SVG-based grouped bar chart displaying month-over-month historical runrates for AWS, GCP, and Azure.
+*   **Future AI Cost Simulator**: Interactive predictive line graphs modeling future compute spend relative to growth variables, spot instance rates, and autopilot policies.
+*   **Autopilot Remediation Core**: Active background simulation loops capable of executing targeted CLI commands gracefully (e.g. EC2 resizing, EBS deletions, storage archiving).
+*   **Infrastructure Topology Map**: Dynamic visual topology mapping of active regions and zone clusters, complete with hover diagnostic overlays and micro-utilization gauges.
+*   **Interactive Agent Chat**: Real-time diagnostic terminal advice and inline prompt action approvals to downscale idle resources immediately.
+*   **Scan Policies & Credentials**: Global credential handshake bindings and continuous scanning intervals (1m, 5m, hourly, daily).
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 - **Framework**: [React 19](https://react.dev/) + [Vite 8](https://vite.dev/)
 - **Styling**: Vanilla HSL CSS variables, glassmorphic filters, and high-performance keyframe animations (`float`, `pulse-glow`, `border-glow-flow`)
@@ -24,7 +24,7 @@ Gradient is a premium, high-fidelity multi-cloud infrastructure cost optimizatio
 
 ---
 
-## 📂 Codebase Directory Structure
+##  Codebase Directory Structure
 
 ```text
 GradientV3/
@@ -50,7 +50,7 @@ GradientV3/
 
 ---
 
-## ⚡ Getting Started
+##  Getting Started
 
 ### Prerequisites
 Make sure you have [Node.js](https://nodejs.org/) installed on your local machine.
