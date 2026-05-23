@@ -123,6 +123,17 @@ npm run lint
 
 ---
 
+## Git attribution
+
+GitHub’s **Contributors** list is built from commit history. If **cursoragent** still appears after a force-push, GitHub may be caching an older commit that included `Co-authored-by: Cursor` — it should drop off after the cache refreshes (often within 24 hours).
+
+To stop Cursor from adding co-author lines on future commits:
+
+1. **Cursor Settings → Agents → Attribution** — turn off commit attribution.
+2. Optional hook (this repo): `git config core.hooksPath .githooks` — strips any Cursor co-author line before each commit.
+
+---
+
 ## License
 
 This project is provided as-is for demonstration and local development.
